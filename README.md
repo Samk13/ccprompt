@@ -14,6 +14,7 @@ Providing such context can help AI models generate more accurate and relevant re
 - Extracts functions or classes and their inheritance chains.
 - Configurable via a JSON configuration file or command-line arguments.
 - Excludes virtual environment directories if needed.
+- zero dependencies if you are using it for python.
 
 ## Installation
 
@@ -31,7 +32,7 @@ fill in the configuration file with the required information. Alternatively, you
 
 ```json
 {
-    "target_name": "class name or function name",
+    "target_name": ["class name or function name", "function name"], 
     "project_path": "/path/to/project",
     "venv_site_packages_path": "/path/to/venv/lib/python3.x/site-packages",
     "exclude_venv": false,
@@ -53,11 +54,19 @@ ccprompt --help
 
 ## Development
 
-git clone the repository and navigate to the root directory.
-
-### Install the Package
-
-Navigate to the root directory where `setup.py` is located and run:
-
 ```bash
-pip install .
+#  installs development dependencies specified in setup.py
+make install
+
+#  Runs tests
+make test
+
+#  Check linting issues
+make lint-check
+
+#  Runs linting and fixes issues
+make lint-fix
+
+#  Formats code using Ruff
+make format
+```
