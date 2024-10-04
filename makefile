@@ -9,8 +9,8 @@ test:
 format:
 	ruff format .
 
-lint:
+lint-check:
 	ruff check .
 
-ruff-check:
+lint-fix:
 	ruff check . --fix
