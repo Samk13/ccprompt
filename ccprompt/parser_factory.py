@@ -9,12 +9,13 @@ import sys
 from .parsers.python_parser import PythonParser
 from .parsers.javascript_parser import JavaScriptParser
 
+
 class ParserFactory:
     @staticmethod
     def get_parser(language):
-        if language == 'python':
+        if language == "python":
             return PythonParser()
-        elif language == 'javascript':
+        elif language == "javascript":
             try:
                 return JavaScriptParser()
             except ImportError as e:

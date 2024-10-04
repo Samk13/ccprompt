@@ -12,8 +12,11 @@ except ImportError:
 
 from .js_parser_interface import JSParserInterface
 
+
 class EsprimaAdapter(JSParserInterface):
     def parse(self, code):
         if esprima is None:
-            raise ImportError("The 'esprima' library is required for JavaScript/TypeScript parsing. Please install it using 'pip install esprima'.")
+            raise ImportError(
+                "The 'esprima' library is required for JavaScript/TypeScript parsing. Please install it using 'pip install esprima'."
+            )
         return esprima.parseScript(code, tolerant=True, range=True)

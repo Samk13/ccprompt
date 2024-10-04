@@ -7,6 +7,7 @@
 
 from abc import ABC, abstractmethod
 
+
 class JSParserInterface(ABC):
     @abstractmethod
     def parse(self, code):

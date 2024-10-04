@@ -10,6 +10,7 @@ import ast
 import warnings
 from .base_parser import BaseParser
 
+
 class PythonParser(BaseParser):
     def __init__(self, logger=None):
         self.file_handler = FileHandler()
@@ -19,7 +20,9 @@ class PythonParser(BaseParser):
     def find_definitions(self, name, directories):
         files = self.file_handler.get_python_files(directories, name)
         for file_path, file_content in files:
-            definitions = self.definition_finder.find_definitions_in_content(name, file_content)
+            definitions = self.definition_finder.find_definitions_in_content(
+                name, file_content
+            )
             for def_info in definitions:
                 def_type, code_snippet, class_hierarchy = def_info
                 yield file_path, code_snippet, class_hierarchy or def_type
@@ -27,7 +30,9 @@ class PythonParser(BaseParser):
     def find_class_definition(self, class_name, directories):
         files = self.file_handler.get_python_files(directories, class_name)
         for file_path, file_content in files:
-            class_node = self.definition_finder.find_class_node(class_name, file_content)
+            class_node = self.definition_finder.find_class_node(
+                class_name, file_content
+            )
             if class_node:
                 class_source = ast.get_source_segment(file_content, class_node)
                 return file_path, class_source, class_node
@@ -55,30 +60,36 @@ class PythonParser(BaseParser):
             else:
                 # Class definition not found
                 if self.logger:
-                    self.logger.warning(f"Class or metaclass '{current_class}' not found in provided directories.")
+                    self.logger.warning(
+                        f"Class or metaclass '{current_class}' not found in provided directories."
+                    )
                 else:
-                    print(f"Warning: Class or metaclass '{current_class}' not found in provided directories.")
+                    print(
+                        f"Warning: Class or metaclass '{current_class}' not found in provided directories."
+                    )
                 continue
         return inheritance_chain
 
+
 # Helper Classes
+
 
 class FileHandler:
     def get_python_files(self, directories, name_filter=None):
         for directory in directories:
             for root, _, files in os.walk(directory):
-                python_files = [file for file in files if file.endswith('.py')]
+                python_files = [file for file in files if file.endswith(".py")]
                 for file in python_files:
                     file_path = os.path.join(root, file)
                     file_content = None
                     # Try reading with UTF-8 encoding
                     try:
-                        with open(file_path, 'r', encoding='utf-8') as f:
+                        with open(file_path, "r", encoding="utf-8") as f:
                             file_content = f.read()
                     except UnicodeDecodeError:
                         # Try reading with UTF-16 encoding
                         try:
-                            with open(file_path, 'r', encoding='utf-16') as f:
+                            with open(file_path, "r", encoding="utf-16") as f:
                                 file_content = f.read()
                         except UnicodeDecodeError:
                             # Skip files that can't be decoded
@@ -130,7 +141,7 @@ class DefinitionFinder:
 
         # Process metaclass
         for keyword in class_node.keywords:
-            if keyword.arg == 'metaclass':
+            if keyword.arg == "metaclass":
                 metaclass_name = self.get_full_name(keyword.value)
                 if metaclass_name:
                     base_classes.append(metaclass_name)
@@ -151,9 +162,10 @@ class DefinitionFinder:
                 current = current.value
             if isinstance(current, ast.Name):
                 names.insert(0, current.id)
-                return '.'.join(names)
+                return ".".join(names)
         # Return None for unsupported node types
         return None
+
 
 class DefinitionVisitor(ast.NodeVisitor):
     def __init__(self, target_name, source_code):
@@ -165,7 +177,7 @@ class DefinitionVisitor(ast.NodeVisitor):
     def visit_ClassDef(self, node):
         if node.name == self.target_name:
             code_snippet = self.get_code_snippet(node)
-            self.found_definitions.append(('class', code_snippet, None))
+            self.found_definitions.append(("class", code_snippet, None))
         self.class_hierarchy.append(node.name)
         self.generic_visit(node)
         self.class_hierarchy.pop()
@@ -174,7 +186,7 @@ class DefinitionVisitor(ast.NodeVisitor):
         if node.name == self.target_name:
             code_snippet = self.get_code_snippet(node)
             hierarchy = list(self.class_hierarchy)
-            self.found_definitions.append(('function', code_snippet, hierarchy))
+            self.found_definitions.append(("function", code_snippet, hierarchy))
         self.generic_visit(node)
 
     def visit_AsyncFunctionDef(self, node):
@@ -182,6 +194,7 @@ class DefinitionVisitor(ast.NodeVisitor):
 
     def get_code_snippet(self, node):
         return ast.get_source_segment(self.source_code, node)
+
 
 class ClassNodeVisitor(ast.NodeVisitor):
     def __init__(self, class_name):

@@ -9,6 +9,7 @@ import os
 from .base_parser import BaseParser
 from .esprima_adapter import EsprimaAdapter
 
+
 class JavaScriptParser(BaseParser):
     def __init__(self):
         self.parser_adapter = EsprimaAdapter()
@@ -18,9 +19,11 @@ class JavaScriptParser(BaseParser):
         for directory in directories:
             for root, _, files in os.walk(directory):
                 for file in files:
-                    if file.endswith(('.js', '.ts')):
+                    if file.endswith((".js", ".ts")):
                         file_path = os.path.join(root, file)
-                        code_snippet = self.find_function_or_class_in_file(name, file_path)
+                        code_snippet = self.find_function_or_class_in_file(
+                            name, file_path
+                        )
                         if code_snippet:
                             yield file_path, code_snippet
 
@@ -36,7 +39,9 @@ class JavaScriptParser(BaseParser):
                 continue
             visited_classes.add(current_class)
 
-            file_path, class_source, super_class = self.find_class_definition(current_class, directories)
+            file_path, class_source, super_class = self.find_class_definition(
+                current_class, directories
+            )
             if file_path and class_source:
                 inheritance_chain.append((file_path, class_source))
                 if super_class and super_class not in visited_classes:
@@ -49,13 +54,20 @@ class JavaScriptParser(BaseParser):
         Search for a function or class definition by name in a given JavaScript/TypeScript file.
         """
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 file_content = f.read()
                 tree = self.parser_adapter.parse(file_content)
                 for node in tree.body:
-                    if (node.type == 'FunctionDeclaration' or node.type == 'ClassDeclaration') and node.id and node.id.name == name:
+                    if (
+                        (
+                            node.type == "FunctionDeclaration"
+                            or node.type == "ClassDeclaration"
+                        )
+                        and node.id
+                        and node.id.name == name
+                    ):
                         # Extract the source code
-                        code_snippet = file_content[node.range[0]:node.range[1]]
+                        code_snippet = file_content[node.range[0] : node.range[1]]
                         return code_snippet
         except Exception:
             # Optionally log the error
@@ -67,17 +79,25 @@ class JavaScriptParser(BaseParser):
         for directory in directories:
             for root, _, files in os.walk(directory):
                 for file in files:
-                    if file.endswith(('.js', '.ts')):
+                    if file.endswith((".js", ".ts")):
                         file_path = os.path.join(root, file)
                         try:
-                            with open(file_path, 'r', encoding='utf-8') as f:
+                            with open(file_path, "r", encoding="utf-8") as f:
                                 file_content = f.read()
                                 tree = self.parser_adapter.parse(file_content)
                                 for node in tree.body:
-                                    if node.type == 'ClassDeclaration' and node.id and node.id.name == class_name:
-                                        class_source = file_content[node.range[0]:node.range[1]]
+                                    if (
+                                        node.type == "ClassDeclaration"
+                                        and node.id
+                                        and node.id.name == class_name
+                                    ):
+                                        class_source = file_content[
+                                            node.range[0] : node.range[1]
+                                        ]
                                         super_class = None
-                                        if node.superClass and hasattr(node.superClass, 'name'):
+                                        if node.superClass and hasattr(
+                                            node.superClass, "name"
+                                        ):
                                             super_class = node.superClass.name
                                         return file_path, class_source, super_class
                         except Exception:
