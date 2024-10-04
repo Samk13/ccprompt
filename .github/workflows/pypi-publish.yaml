@@ -1,0 +1,39 @@
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2024 Sam Arbid.
+#
+# CCprompt is free software, you can redistribute it and/or
+# modify it under the terms of the MIT License; see LICENSE file details.
+
+name: PyPI Publish
+
+on:
+  push:
+    tags:
+      - v*
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason'
+        required: false
+        default: 'Manual trigger'
+jobs:
+  pypi-publish:
+    name: Upload release to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/ccprompt
+    permissions:
+      id-token: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install dependencies
+      run: |
+        pip install twine
+    - name: Run package build
+      run: |
+        python setup.py sdist
+    - name: Publish package to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
