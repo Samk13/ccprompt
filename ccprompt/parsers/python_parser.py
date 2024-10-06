@@ -44,7 +44,9 @@ class PythonParser(BaseParser):
         module_parts = relative_path.with_suffix("").parts
         return ".".join(module_parts)
 
-    def get_object_source_and_inheritance(self, target_name, visited_classes, directories, index):
+    def get_object_source_and_inheritance(
+        self, target_name, visited_classes, directories, index
+    ):
         source_codes = []
 
         # Ensure the directories are in sys.path
@@ -86,12 +88,12 @@ class PythonParser(BaseParser):
                     self.process_class(obj, visited_classes, directories)
                 )
             elif inspect.isfunction(obj) or inspect.ismethod(obj):
-                source_codes.extend(
-                    self.process_function(obj)
-                )
+                source_codes.extend(self.process_function(obj))
             else:
                 if self.logger:
-                    self.logger.warning(f"Object '{target_name}' is neither a class nor a function.")
+                    self.logger.warning(
+                        f"Object '{target_name}' is neither a class nor a function."
+                    )
         return source_codes
 
     def process_class(self, obj, visited_classes, directories):

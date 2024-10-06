@@ -9,7 +9,8 @@ import time
 
 
 def time_it(func):
-    """ Decorator to measure the time taken for a function to execute. """
+    """Decorator to measure the time taken for a function to execute."""
+
     def wrapper(*args, **kwargs):
         start_time = time.time()
         result = func(*args, **kwargs)
