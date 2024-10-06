@@ -10,7 +10,7 @@ Providing such context can help AI models generate more accurate and relevant re
 
 ## Features
 
-- Supports Python and JavaScript/TypeScript languages.
+- Supports Python languages, JavaScript/TypeScript support coming soon.
 - Extracts functions or classes and their inheritance chains.
 - Configurable via a JSON configuration file or command-line arguments.
 - Excludes virtual environment directories if needed.
@@ -32,9 +32,9 @@ fill in the configuration file with the required information. Alternatively, you
 
 ```json
 {
-    "target_name": ["class name or function name", "function name"], 
-    "project_path": "/path/to/project",
-    "venv_site_packages_path": "/path/to/venv/lib/python3.x/site-packages",
+    "target_name": ["YourClassName", "your_function_name"],
+    "project_path": "/full/path/to/project",
+    "venv_site_packages_path": "/full/path/to/venv/lib/python3.x/site-packages",
     "exclude_venv": false,
     "output_file": "extracted_code.txt",
     "language": "python"
@@ -49,13 +49,20 @@ the extracted code will include file path, functions or classes and their inheri
 Star and share the repository if you find it useful.
 
 ```bash
+# Update your configuration file then run
+ccprompt
+
+# Also possible to pass the configuration file as arguments
+ccprompt --target_names YourClassName your_function_name
+
+# See all available options
 ccprompt --help
 ```
 
 ## Development
 
 ```bash
-pip install -e .
+pip install -e .["dev"]
 ```
 
 ## Commands
