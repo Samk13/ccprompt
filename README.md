@@ -55,6 +55,12 @@ ccprompt --help
 ## Development
 
 ```bash
+pip install -e .
+```
+
+## Commands
+
+```bash
 #  installs development dependencies specified in setup.py
 make install
 
