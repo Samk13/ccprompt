@@ -3,11 +3,17 @@
 install:
 	pip install .[dev]
 
+dev-install:
+	pip install -e .
+
+run:
+	ccprompt --log_level DEBUG
+
 test:
 	python -m unittest discover -s tests
 
 format:
-	ruff format .
+	ruff format . && ruff check . --fix
 
 lint-check:
 	ruff check .
