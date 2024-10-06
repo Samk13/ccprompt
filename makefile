@@ -20,3 +20,7 @@ lint-check:
 
 lint-fix:
 	ruff check . --fix
+
+change-log:
+	# get the latest changes from the last tag for CHANGES.rst
+	@git log $$(git describe --tags --abbrev=0)..HEAD --pretty=format:"%s"
