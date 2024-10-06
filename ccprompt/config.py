@@ -19,7 +19,7 @@ class Config:
     def load_config(self):
         default_config = {
             "target_name": [],
-            "project_path": "",
+            "project_path": os.getcwd(),
             "venv_site_packages_path": "",
             "exclude_venv": False,
             "output_file": "extracted_code.txt",
