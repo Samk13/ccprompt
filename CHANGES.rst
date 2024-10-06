@@ -7,6 +7,17 @@ Changes
 =======
 
 
+Version 0.2.0 (released 2024-10-06)
+
+- fix: Update makefile commands for development environment
+- chore: Add cSpell configuration for ccprompt
+- ci: Add CI workflow for running tests
+- refactor: change extract logic
+- feat: Add time_it decorator
+- tests: update tests
+- remove example file
+- fix: update readme
+
 Version 0.1.2 (released 2024-10-05)
 
 - Update the README file.
