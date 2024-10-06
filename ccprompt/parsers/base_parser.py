@@ -16,3 +16,7 @@ class BaseParser(ABC):
     @abstractmethod
     def find_inheritance_chain(self, class_name, directories):
         pass
+
+    @abstractmethod
+    def build_index(self, project_path):
+        pass

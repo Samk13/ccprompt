@@ -9,17 +9,19 @@ import sys
 from .parsers.python_parser import PythonParser
 from .parsers.javascript_parser import JavaScriptParser
 
-
 class ParserFactory:
     @staticmethod
-    def get_parser(language):
+    def get_parser(language, logger=None):
         if language == "python":
-            return PythonParser()
+            return PythonParser(logger=logger)
         elif language == "javascript":
             try:
-                return JavaScriptParser()
+                return JavaScriptParser(logger=logger)
             except ImportError as e:
-                print(e)
+                if logger:
+                    logger.error(e)
+                else:
+                    print(e)
                 sys.exit(1)
         else:
             raise ValueError(f"Unsupported language: {language}")
