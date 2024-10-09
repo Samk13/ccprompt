@@ -7,6 +7,10 @@ Changes
 =======
 
 
+Version 0.2.0 (released 2024-10-10)
+
+- fix: revert logic refactor
+
 Version 0.2.0 (released 2024-10-06)
 
 - fix: Update makefile commands for development environment
