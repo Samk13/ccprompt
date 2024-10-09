@@ -6,15 +6,12 @@
 # modify it under the terms of the MIT License; see LICENSE file details.
 
 import argparse
-import logging
 from pathlib import Path
 from .config import Config
 from .parser_factory import ParserFactory
 from ccprompt import __version__
-from ccprompt.utils import time_it
 
 
-@time_it
 def extract_code(
     target_names,
     project_path,
@@ -23,7 +20,13 @@ def extract_code(
     language="python",
     logger=None,
 ):
+    """
+    Extract relevant code based on a list of function or class names.
+    Include all their inheritance and related upper-level code.
+    """
     if logger is None:
+        import logging
+
         logger = logging.getLogger(__name__)
 
     output_content = []
@@ -32,27 +35,75 @@ def extract_code(
     if venv_site_packages_path:
         search_directories.append(venv_site_packages_path)
 
-    parser = ParserFactory.get_parser(language, logger=logger)
+    parser = ParserFactory.get_parser(language)
 
-    # Build index of class and function names to module paths
-    index = parser.build_index(project_path)
-
+    # Extract the requested classes or functions
     for target_name in target_names:
-        logger.info(f"Processing '{target_name}'...")
-        source_codes = parser.get_object_source_and_inheritance(
-            target_name, visited_classes, search_directories, index
-        )
-        if source_codes:
-            for file_path, code_snippet in source_codes:
+        found = False
+        logger.info(f"Searching for '{target_name}'...")
+        for file_path, code_snippet, extra_info in parser.find_definitions(
+            target_name, search_directories
+        ):
+            if file_path is None:
+                continue  # Target not found
+            found = True
+            if extra_info == "class":
+                # Target is a class
+                logger.debug(f"Found class '{target_name}' in {file_path}")
                 output_content.append(f"File: {file_path}\n\n{code_snippet}\n")
-        else:
-            logger.warning(f"'{target_name}' not found.")
+                visited_classes.add(target_name)
+                # Get the inheritance chain
+                inheritance_chain = parser.find_inheritance_chain(
+                    target_name, search_directories
+                )
+                for class_file_path, class_source in inheritance_chain:
+                    class_definition_line = class_source.split("\n")[0]
+                    class_name_part = class_definition_line.split("(")[0].split(" ")[
+                        1
+                    ]  # Extract class name from definition
+                    if class_name_part not in visited_classes:
+                        output_content.append(
+                            f"File: {class_file_path}\n\n{class_source}\n"
+                        )
+                        visited_classes.add(class_name_part)
+            else:
+                # Target is a function
+                code_snippet, class_hierarchy = code_snippet, extra_info
+                logger.debug(f"Found function '{target_name}' in {file_path}")
+                if class_hierarchy:
+                    # Function is inside a class
+                    class_name = class_hierarchy[-1]
+                    if class_name not in visited_classes:
+                        logger.debug(f"Processing class '{class_name}'")
+                        # Get the class definition and inheritance chain
+                        inheritance_chain = parser.find_inheritance_chain(
+                            class_name, search_directories
+                        )
+                        for class_file_path, class_source in inheritance_chain:
+                            class_definition_line = class_source.split("\n")[0]
+                            class_name_part = class_definition_line.split("(")[0].split(
+                                " "
+                            )[1]  # Extract class name from definition
+                            if class_name_part not in visited_classes:
+                                output_content.append(
+                                    f"File: {class_file_path}\n\n{class_source}\n"
+                                )
+                                visited_classes.add(class_name_part)
+                    # Include the function code
+                    output_content.append(f"File: {file_path}\n\n{code_snippet}\n")
+                else:
+                    # Function is not inside a class
+                    output_content.append(f"File: {file_path}\n\n{code_snippet}\n")
 
+        if not found:
+            logger.warning(f"'{target_name}' not found in the provided directories.")
+
+    # Write to output file
     output_path = Path(output_file)
     try:
         with open(output_path, "w", encoding="utf-8") as f:
-            for content in output_content:
-                f.write(f"{content}\n")
+            for line in output_content:
+                f.write(f"{line}\n")
         logger.info(f"Relevant code extracted to {output_path}")
     except Exception as e:
         logger.error(f"Error writing to output file {output_path}: {e}")
@@ -106,9 +157,13 @@ def main():
     )
     args = parser.parse_args()
 
+    # Set up logging
+    import logging
+
     logging.basicConfig(level=getattr(logging, args.log_level.upper()))
     logger = logging.getLogger(__name__)
 
+    # Load configuration
     config = Config(args.config, args)
 
     extract_code(
