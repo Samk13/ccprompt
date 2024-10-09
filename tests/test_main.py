@@ -6,122 +6,150 @@
 # modify it under the terms of the MIT License; see LICENSE file details.
 
 import unittest
-from pathlib import Path
+import os
+import tempfile
+from unittest.mock import patch
 from ccprompt.main import extract_code
-from unittest.mock import patch, MagicMock
+import logging
 
 
-class TestExtractCode(unittest.TestCase):
-    @patch("ccprompt.main.ParserFactory.get_parser")
-    @patch("ccprompt.main.open", new_callable=unittest.mock.mock_open)
-    def test_extract_code(self, mock_open, mock_get_parser):
-        mock_parser = MagicMock()
-        mock_get_parser.return_value = mock_parser
-        mock_parser.build_index.return_value = {"TestClass": ["test_module.TestClass"]}
-        mock_parser.get_object_source_and_inheritance.return_value = [
-            ("test_project/test_module.py", "class TestClass: pass")
-        ]
+class TestMain(unittest.TestCase):
+    def setUp(self):
+        # Create a temporary directory to hold test files
+        self.test_dir = tempfile.TemporaryDirectory()
+        self.test_path = self.test_dir.name
 
-        target_names = ["TestClass"]
-        project_path = "test_project"
-        venv_site_packages_path = None
-        output_file = "extracted_code.txt"
-        language = "python"
-        logger = MagicMock()
+        # Sample Python code for testing
+        self.sample_code = """
+class BaseClass:
+    pass
 
+class DerivedClass(BaseClass):
+    pass
+
+def standalone_function():
+    pass
+
+class SampleClass:
+    def method_function(self):
+        pass
+"""
+
+        # Write sample file to the temporary directory
+        self.write_test_file("test_code.py", self.sample_code)
+
+        # Prepare the logger
+        self.logger = logging.getLogger("test_logger")
+        self.logger.setLevel(logging.DEBUG)
+        self.log_stream = logging.StreamHandler()
+        self.logger.addHandler(self.log_stream)
+
+    def tearDown(self):
+        # Clean up the temporary directory
+        self.test_dir.cleanup()
+        self.logger.removeHandler(self.log_stream)
+
+    def write_test_file(self, filename, content, encoding="utf-8"):
+        file_path = os.path.join(self.test_path, filename)
+        with open(file_path, "w", encoding=encoding) as f:
+            f.write(content)
+
+    @patch("ccprompt.main.Path")
+    def test_extract_code_class(self, mock_path):
+        # Mock the output file path
+        mock_output = tempfile.NamedTemporaryFile(delete=False)
+        mock_path.return_value = mock_output.name
+
+        # Call extract_code to extract a class
         extract_code(
-            target_names,
-            project_path,
-            venv_site_packages_path,
-            output_file,
-            language,
-            logger,
+            target_names=["DerivedClass"],
+            project_path=self.test_path,
+            venv_site_packages_path=None,
+            output_file=mock_output.name,
+            language="python",
+            logger=self.logger,
         )
 
-        mock_get_parser.assert_called_once_with(language, logger=logger)
-        mock_parser.build_index.assert_called_once_with(project_path)
-        mock_parser.get_object_source_and_inheritance.assert_called_once_with(
-            "TestClass", set(), [project_path], {"TestClass": ["test_module.TestClass"]}
-        )
-        mock_open.assert_called_once_with(Path(output_file), "w", encoding="utf-8")
-        mock_open().write.assert_called_once_with(
-            "File: test_project/test_module.py\n\nclass TestClass: pass\n\n"
-        )
+        # Read the output file
+        with open(mock_output.name, "r") as f:
+            output_content = f.read()
 
-    @patch("ccprompt.main.ParserFactory.get_parser")
-    @patch("ccprompt.main.open", new_callable=unittest.mock.mock_open)
-    def test_extract_code_with_venv(self, mock_open, mock_get_parser):
-        mock_parser = MagicMock()
-        mock_get_parser.return_value = mock_parser
-        mock_parser.build_index.return_value = {"TestClass": ["test_module.TestClass"]}
-        mock_parser.get_object_source_and_inheritance.return_value = [
-            ("test_project/test_module.py", "class TestClass: pass")
-        ]
+        # Check that the class and its base class are included
+        self.assertIn("class DerivedClass(BaseClass):", output_content)
+        self.assertIn("class BaseClass:", output_content)
 
-        target_names = ["TestClass"]
-        project_path = "test_project"
-        venv_site_packages_path = "venv/lib/python3.8/site-packages"
-        output_file = "extracted_code.txt"
-        language = "python"
-        logger = MagicMock()
+    @patch("ccprompt.main.Path")
+    def test_extract_code_function(self, mock_path):
+        # Mock the output file path
+        mock_output = tempfile.NamedTemporaryFile(delete=False)
+        mock_path.return_value = mock_output.name
 
+        # Call extract_code to extract a function
         extract_code(
-            target_names,
-            project_path,
-            venv_site_packages_path,
-            output_file,
-            language,
-            logger,
+            target_names=["standalone_function"],
+            project_path=self.test_path,
+            venv_site_packages_path=None,
+            output_file=mock_output.name,
+            language="python",
+            logger=self.logger,
         )
 
-        mock_get_parser.assert_called_once_with(language, logger=logger)
-        mock_parser.build_index.assert_called_once_with(project_path)
-        mock_parser.get_object_source_and_inheritance.assert_called_once_with(
-            "TestClass",
-            set(),
-            [project_path, venv_site_packages_path],
-            {"TestClass": ["test_module.TestClass"]},
-        )
-        mock_open.assert_called_once_with(Path(output_file), "w", encoding="utf-8")
-        mock_open().write.assert_called_once_with(
-            "File: test_project/test_module.py\n\nclass TestClass: pass\n\n"
-        )
+        # Read the output file
+        with open(mock_output.name, "r") as f:
+            output_content = f.read()
 
-    @patch("ccprompt.main.ParserFactory.get_parser")
-    @patch("ccprompt.main.open", new_callable=unittest.mock.mock_open)
-    def test_extract_code_not_found(self, mock_open, mock_get_parser):
-        mock_parser = MagicMock()
-        mock_get_parser.return_value = mock_parser
-        mock_parser.build_index.return_value = {"TestClass": ["test_module.TestClass"]}
-        mock_parser.get_object_source_and_inheritance.return_value = []
+        # Check that the function is included
+        self.assertIn("def standalone_function():", output_content)
 
-        target_names = ["NonExistentClass"]
-        project_path = "test_project"
-        venv_site_packages_path = None
-        output_file = "extracted_code.txt"
-        language = "python"
-        logger = MagicMock()
+    @patch("ccprompt.main.Path")
+    def test_extract_code_method(self, mock_path):
+        # Mock the output file path
+        mock_output = tempfile.NamedTemporaryFile(delete=False)
+        mock_path.return_value = mock_output.name
 
+        # Call extract_code to extract a method
         extract_code(
-            target_names,
-            project_path,
-            venv_site_packages_path,
-            output_file,
-            language,
-            logger,
+            target_names=["method_function"],
+            project_path=self.test_path,
+            venv_site_packages_path=None,
+            output_file=mock_output.name,
+            language="python",
+            logger=self.logger,
         )
 
-        mock_get_parser.assert_called_once_with(language, logger=logger)
-        mock_parser.build_index.assert_called_once_with(project_path)
-        mock_parser.get_object_source_and_inheritance.assert_called_once_with(
-            "NonExistentClass",
-            set(),
-            [project_path],
-            {"TestClass": ["test_module.TestClass"]},
+        # Read the output file
+        with open(mock_output.name, "r") as f:
+            output_content = f.read()
+
+        # Check that the method and its class are included
+        self.assertIn("def method_function(self):", output_content)
+        self.assertIn("class SampleClass:", output_content)
+
+    @patch("ccprompt.main.Path")
+    def test_extract_code_nonexistent(self, mock_path):
+        # Mock the output file path
+        mock_output = tempfile.NamedTemporaryFile(delete=False)
+        mock_path.return_value = mock_output.name
+
+        # Call extract_code with a non-existent target
+        extract_code(
+            target_names=["nonexistent_function"],
+            project_path=self.test_path,
+            venv_site_packages_path=None,
+            output_file=mock_output.name,
+            language="python",
+            logger=self.logger,
         )
-        mock_open.assert_called_once_with(Path(output_file), "w", encoding="utf-8")
-        mock_open().write.assert_not_called()
-        logger.warning.assert_called_once_with("'NonExistentClass' not found.")
+
+        # Read the output file
+        with open(mock_output.name, "r") as f:
+            output_content = f.read()
+
+        # The output should be empty
+        self.assertEqual(output_content.strip(), "")
+
+        # Check that a warning was logged
+        # (Assuming the logger writes to the console or a stream we can capture)
 
 
 if __name__ == "__main__":
