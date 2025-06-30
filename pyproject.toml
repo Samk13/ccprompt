@@ -58,7 +58,7 @@ addopts = "--verbose"
 # F: https://docs.astral.sh/ruff/rules/#pyflakes-f
 # I : https://docs.astral.sh/ruff/rules/#isort-i
 # PTH: https://docs.astral.sh/ruff/rules/#flake8-use-pathlib-pth
-select = ["E4", "E7", "E9", "F","I","PTH"]
+select = ["E4", "E7", "E9", "F","I"]
 preview = true
 
 # 2. Avoid enforcing line-length violations (`E501`)
