@@ -6,6 +6,7 @@
 # modify it under the terms of the MIT License; see LICENSE file details.
 
 import os
+
 from .base_parser import BaseParser
 from .esprima_adapter import EsprimaAdapter
 

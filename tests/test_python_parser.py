@@ -6,10 +6,11 @@
 # modify it under the terms of the MIT License; see LICENSE file details.
 
 import ast
-import unittest
-import os
 import tempfile
+import unittest
 import warnings
+from pathlib import Path
+
 from ccprompt.parsers.python_parser import PythonParser
 
 
@@ -67,8 +68,8 @@ class SampleClass:
         self.test_dir.cleanup()
 
     def write_test_file(self, filename, content, encoding="utf-8"):
-        file_path = os.path.join(self.test_path, filename)
-        with open(file_path, "w", encoding=encoding, errors="ignore") as f:
+        file_path = Path(self.test_path) / filename
+        with file_path.open("w", encoding=encoding, errors="ignore") as f:
             if isinstance(content, bytes):
                 content = content.decode(encoding, errors="ignore")
             f.write(content)

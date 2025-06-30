@@ -5,8 +5,9 @@
 # CCprompt is free software, you can redistribute it and/or
 # modify it under the terms of the MIT License; see LICENSE file details.
 
-import os
 import json
+import os
+import pathlib
 import sys
 
 
@@ -34,7 +35,7 @@ class Config:
                 f"No configuration file found. Creating default config file at {self.config_file}."
             )
         else:
-            if os.path.getsize(self.config_file) == 0:
+            if pathlib.Path(self.config_file).stat().st_size == 0:
                 config_needs_creation = True
                 print(
                     f"Configuration file {self.config_file} is empty. Writing default configurations."

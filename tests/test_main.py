@@ -5,12 +5,13 @@
 # CCprompt is free software, you can redistribute it and/or
 # modify it under the terms of the MIT License; see LICENSE file details.
 
-import unittest
+import logging
 import os
 import tempfile
+import unittest
 from unittest.mock import patch
+
 from ccprompt.main import extract_code
-import logging
 
 
 class TestMain(unittest.TestCase):

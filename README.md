@@ -5,21 +5,39 @@
 ### The Problem
 
 When working with AI prompts, it is often necessary to provide code context to the model to generate useful responses. This can be a time-consuming task, especially when working with large codebases.
-CCprompt is a tool designed to extract code context for AI prompts based on provided function or class names. It supports both Python and JavaScript/TypeScript codebases.
+CCprompt is a tool designed to extract code context for AI prompts based on provided function or class names. It supports both Python codebases.
 Providing such context can help AI models generate more accurate and relevant responses.
 
 ## Features
 
-- Supports Python languages, JavaScript/TypeScript support coming soon.
-- Extracts functions or classes and their inheritance chains.
-- Configurable via a JSON configuration file or command-line arguments.
-- Excludes virtual environment directories if needed.
-- zero dependencies if you are using it for python.
+- Supports Python codebase.
+- Extracts functions or classes and their inheritance chains
+- Configurable via a JSON configuration file or command-line arguments
+- Excludes virtual environment directories if needed
+- Zero runtime dependencies for Python-only usage
+- Optional JavaScript support via esprima
 
 ## Installation
 
+### Using uv (recommended)
+
+```bash
+uv add ccprompt
+```
+
+### Using pip
+
 ```bash
 pip install ccprompt
+```
+
+### Development Setup
+
+```bash
+git clone https://github.com/Samk13/ccprompt.git
+cd ccprompt
+uv sync
+uv run ccprompt --help
 ```
 
 ## Usage
@@ -61,25 +79,55 @@ ccprompt --help
 
 ## Development
 
-```bash
-pip install -e .["dev"]
-```
-
-## Commands
+### Quick Start
 
 ```bash
-#  installs development dependencies specified in setup.py
-make install
+# Install dependencies
+uv sync
 
-#  Runs tests
+# Run tests
 make test
 
-#  Check linting issues
+# Check code style
 make lint-check
 
-#  Runs linting and fixes issues
-make lint-fix
-
-#  Formats code using Ruff
-make format
+# See all available commands
+make help
 ```
+
+### Available Make Commands
+
+```bash
+# Dependencies and Setup
+make sync        # Install dependencies with uv
+make install     # Alias for sync
+make clean       # Remove build artifacts and cache
+
+# Development
+make run         # Run ccprompt with debug logging
+make test        # Run test suite with pytest
+make build       # Build distribution packages
+
+# Code Quality
+make lint-check  # Check code style with ruff
+make lint-fix    # Fix code style issues with ruff
+make format      # Format and fix code with ruff
+
+# Utilities
+make change-log  # Show changes since last tag
+make help        # Show all available commands
+```
+
+## Requirements
+
+- Python >=3.12
+- [uv](https://docs.astral.sh/uv/) (recommended) or pip
+
+## Project Structure
+
+This project uses modern Python packaging with:
+- **`pyproject.toml`** - Project configuration and dependencies
+- **`uv`** - Fast Python package manager
+- **`pytest`** - Testing framework  
+- **`ruff`** - Code formatting and linting
+- **`hatchling`** - Build backend
