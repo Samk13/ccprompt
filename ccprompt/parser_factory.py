@@ -6,8 +6,9 @@
 # modify it under the terms of the MIT License; see LICENSE file details.
 
 import sys
-from .parsers.python_parser import PythonParser
+
 from .parsers.javascript_parser import JavaScriptParser
+from .parsers.python_parser import PythonParser
 
 
 class ParserFactory:

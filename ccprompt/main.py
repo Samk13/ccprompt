@@ -7,10 +7,12 @@
 
 import argparse
 from pathlib import Path
-from .config import Config
-from .parser_factory import ParserFactory
+
 from ccprompt import __version__
 from ccprompt.utils import time_it
+
+from .config import Config
+from .parser_factory import ParserFactory
 
 
 @time_it

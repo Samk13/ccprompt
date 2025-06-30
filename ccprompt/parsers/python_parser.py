@@ -5,9 +5,10 @@
 # CCprompt is free software, you can redistribute it and/or
 # modify it under the terms of the MIT License; see LICENSE file details.
 
-import os
 import ast
+import os
 import warnings
+
 from .base_parser import BaseParser
 
 
